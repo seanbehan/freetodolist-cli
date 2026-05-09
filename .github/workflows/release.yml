@@ -1,0 +1,47 @@
+name: release
+
+# Build and publish a GitHub Release whenever a `v*` tag is pushed.
+# Cut a release with:
+#
+#   git tag v0.2.0 && git push origin v0.2.0
+#
+# The job runs build.sh, which produces 5 platform binaries plus a
+# SHA256SUMS file under dist/, then uploads them as release assets.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# softprops/action-gh-release needs write access to repo Releases.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Use the Go version declared in go.mod so CI tracks the source of
+      # truth without a second place to bump.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build cross-platform binaries
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: ./build.sh
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: CLI ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/SHA256SUMS
