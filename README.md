@@ -24,11 +24,16 @@ extract, and put it on your `PATH`:
 
 ```bash
 # macOS / Linux
-tar -xzf freetodolist-v0.1.0-<os>-<arch>.tar.gz
-sudo mv freetodolist-v0.1.0-<os>-<arch>/freetodolist /usr/local/bin/
+tar -xzf freetodolist-<os>-<arch>.tar.gz
+sudo mv freetodolist-*/freetodolist /usr/local/bin/
+
+# macOS only — lift Gatekeeper's quarantine on the unsigned binary.
+sudo xattr -d com.apple.quarantine /usr/local/bin/freetodolist
 
 # Windows: unzip and place freetodolist.exe on your PATH.
 ```
+
+> Why the `xattr` step? macOS adds a `com.apple.quarantine` attribute to anything downloaded via the browser, and Gatekeeper blocks unsigned executables on first run. Removing the attribute clears the warning. (We'll move to a signed + notarized release once it's worth the Apple Developer subscription.)
 
 Or build from source (requires Go 1.21+):
 
